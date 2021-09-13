@@ -111,4 +111,4 @@ def test_Simple_Rankine_cycle_obeys_First_Law(P_condenser,P_boiler):
     qcondenser = src.metrics["Condenser heat"]
 
     residual = (qboiler + wpump) - (wturbine + qcondenser)
-    assert residual >= 0
+    assert residual == 0

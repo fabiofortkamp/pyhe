@@ -11,7 +11,7 @@ setup(
     name='pyhe',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
-    version='0.3',
+    version='0.3.1',
     description='Python model to simulate heat engines',
     long_description=long_description,
     long_description_content_type='text/markdown',

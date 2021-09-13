@@ -119,10 +119,10 @@ class SimpleRankineCycle(object):
         "Specific work": the net output work, in [J/kg]
         "Temperatures": array of temperatures (see above) in [K]
         "Entropy values": array of specific entropy (see above) in [J/(kg K)]
-        "Boiler heat": in [kJ/kg]
-        "Condenser heat": in [kJ/kg]
-        "Pump work": in [kJ/kg]
-        "Turbine work": in [kJ/kg]
+        "Boiler heat": in [J/kg]
+        "Condenser heat": in [J/kg]
+        "Pump work": in [J/kg]
+        "Turbine work": in [J/kg]
 
         """
 
