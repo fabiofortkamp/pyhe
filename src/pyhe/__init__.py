@@ -11,7 +11,7 @@ class CarnotSteadyStateCycle(object):
         Args:
             T_L : low side temperature [K]
             T_H : hot side temperature [K]
-            Delta_s : specific entropy change [kJ/(kg K)]
+            Delta_s : specific entropy change [J/(kg K)]
         """
 
         self.validate_args(T_L,T_H,Delta_s)
@@ -39,7 +39,12 @@ class CarnotSteadyStateCycle(object):
             raise ValueError("Entropy variation should be positive.")
 
     def run(self):
-        """Run the Carnot cycle model and update its metrics
+        """Run the Carnot cycle model and update the 'metrics' attribute.
+
+        Keys:
+
+        "Thermal efficiency": ratio of specific work to input heat, from 0 to 1
+        "Specific work": the net output work, in [J/kg]
 
         """
 
@@ -52,6 +57,18 @@ class CarnotSteadyStateCycle(object):
 class SimpleRankineCycle(object):
     
     def __init__(self, P_condenser, P_boiler,fluid='Water'):
+        """Simple Rankine (no superheat) cycle in steady state form.
+
+        The cycle is ideal: pump and turbine are isentropic, there are no 
+        pressure drops in heat exchangers, and no variations of 
+        kinetic and potential energy
+
+        Args:
+            P_condenser : condenser pressure [Pa]
+            P_boiler : boiler pressure [Pa]
+            fluid : working fluid, should be included in:
+            http://www.coolprop.org/fluid_properties/PurePseudoPure.html#list-of-fluids 
+        """
 
         self.validate_args(P_condenser,P_boiler)
         self.P_condenser = P_condenser
@@ -81,6 +98,28 @@ class SimpleRankineCycle(object):
 
     def run(self):
 
+        """Run the Simple Rankine cycle model and update the 'metrics' attribute.
+
+        In the array attributes, the order of states is:
+
+        0: pump inlet or condenser outlet
+        1: pump outlet or boiler inlet
+        2: boiler outlet or turbine inlet
+        3: turbine outlet or condenser inlet
+
+        Keys:
+
+        "Thermal efficiency": ratio of specific work to input heat, from 0 to 1
+        "Specific work": the net output work, in [J/kg]
+        "Temperatures": array of temperatures (see above) in [K]
+        "Entropy values": array of specific entropy (see above) in [J/(kg K)]
+        "Boiler heat": in [kJ/kg]
+        "Condenser heat": in [kJ/kg]
+        "Pump work": in [kJ/kg]
+        "Turbine work": in [kJ/kg]
+
+        """
+
         P_condenser = self.P_condenser
         P_boiler = self.P_boiler
         fluid = self.fluid
@@ -92,9 +131,14 @@ class SimpleRankineCycle(object):
         # we calculate the density and take the inverse
         v1 = (PropsSI("D","P",P_condenser,"Q",0,fluid))**(-1)
 
+        # assuming incompressible liquid, no variations of 
+        # kinetic and potential energy
         w_pump = v1 * (P_boiler - P_condenser)
 
+        # First Law Analysis in Pump
         h2 = h1 + w_pump
+
+        # Second Law Analysis in Pump
         s2 = s1
         T2 = PropsSI("T","H",h2,"S",s2,fluid)
 
@@ -102,17 +146,23 @@ class SimpleRankineCycle(object):
         s3 = PropsSI("S","P",P_boiler,"Q",1,fluid)
         T3 = PropsSI("T","P",P_boiler,"Q",1,fluid)
 
+        # First Law Analysis in Boiler
         q_boiler = h3 - h2
 
+        # Second Law Analysis in Turbine
         s4 = s3
         T4 = T1
         h4 = PropsSI("H","P",P_condenser,"S",s4,fluid)
 
+        # First Law Analysis in Turbine
         w_turbine = h3 - h4
+
+        # First Law Analysis in Condenser
         q_condenser = h4 - h1
 
         w_net = w_turbine - w_pump
 
+        # thermal efficiency
         eta_t = w_net/q_boiler
 
         self.metrics = {
