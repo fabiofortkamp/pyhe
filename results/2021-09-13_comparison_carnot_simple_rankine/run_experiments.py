@@ -23,6 +23,8 @@ FLUID = 'Water'
 P_boiler = np.linspace(PRESSURE_BOILER_MIN,PRESSURE_BOILER_MAX,N_POINTS)
 w_Carnot = np.empty_like(P_boiler)
 w_Rankine = np.empty_like(P_boiler)
+w_turbine_Rankine = np.empty_like(P_boiler)
+w_pump_Rankine = np.empty_like(P_boiler)
 
 eta_Carnot = np.empty_like(P_boiler)
 eta_Rankine = np.empty_like(P_boiler)
@@ -45,6 +47,8 @@ for (i,Pb) in enumerate(P_boiler):
     src.run()
     eta_Rankine[i] = src.metrics["Thermal efficiency"]
     w_Rankine[i] = src.metrics["Specific work"]
+    w_turbine_Rankine[i] = src.metrics["Turbine work"]
+    w_pump_Rankine[i] = src.metrics["Pump work"]
 
 fig, ax = plt.subplots(figsize=(FIGSIZE_WIDTH,FIGSIZE_HEIGHT))
 x = P_boiler*1e-3
@@ -67,3 +71,11 @@ ax_w.set_yticks(np.linspace(ax_w.get_yticks()[0], ax_w.get_yticks()[-1], len(ax.
 ax_w.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 fig.savefig("comparison_carnot_simple_rankine.png",dpi=600)
 
+fig_power, ax_power = plt.subplots(figsize=(FIGSIZE_WIDTH,FIGSIZE_HEIGHT))
+ax_power.plot(x,1e-3*w_pump_Rankine,"ko-")
+ax_power.plot(x,1e-3*w_turbine_Rankine,"kx-")
+ax_power.set_xlabel("Boiler pressure [kPa]")
+ax_power.set_ylabel("Component work [kJ/kg]")
+ax_power.set_title("Turbine (x) and pump (dot) work in a Simple Rankine cycle, for a fixed condenser pressure of %.2f kPa" %(PRESSURE_CONDENSER*1e-3),loc='left',wrap=True)
+ax_power.grid(True)
+fig_power.savefig("component_power_simple_rankine.png",dpi=600)
