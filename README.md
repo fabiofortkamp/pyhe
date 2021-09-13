@@ -35,3 +35,7 @@ See `requirements.txt` and `requirements-dev.txt` for the environment requiremen
 ## Testing
 
 Tests are available with `pytest`.
+
+The tests currently check for some basic conditions, like exception when certain parameters are not valid, and also for validity of the First and Second Law of Thermodynamics.
+
+Notice that currently tests are highly inneficient because fixtures are not implemented yet.

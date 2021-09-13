@@ -20,7 +20,9 @@ class CarnotSteadyStateCycle(object):
         self.Delta_s = Delta_s
         self.metrics = {
             "Thermal efficiency": None,
-            "Specific work": None
+            "Specific work": None,
+            "Input heat": None,
+            "Output heat":None
             
         }
 
@@ -45,12 +47,16 @@ class CarnotSteadyStateCycle(object):
 
         "Thermal efficiency": ratio of specific work to input heat, from 0 to 1
         "Specific work": the net output work, in [J/kg]
+        "Input heat": in [J/kg]
+        "Output heat": in [J/kg]
 
         """
 
         self.metrics = {
             "Thermal efficiency": 1 - self.T_L/self.T_H,
-            "Specific work": (self.T_H - self.T_L)*self.Delta_s
+            "Specific work": (self.T_H - self.T_L)*self.Delta_s,
+            "Input heat": (self.T_H*self.Delta_s),
+            "Output heat": (self.T_L*self.Delta_s)
             
         }
 

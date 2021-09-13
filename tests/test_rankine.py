@@ -2,10 +2,20 @@ import pytest
 from pyhe import SimpleRankineCycle, CarnotSteadyStateCycle
 from CoolProp.CoolProp import PropsSI
 
-def test_calculate_efficiency_returns_positive():
+# These tests currently only apply to water as the working fluid.
 
-    P_condenser = 10e3
-    P_boiler = 100e3
+@pytest.mark.parametrize(
+    "P_condenser,P_boiler",
+   [
+      (5e3,1e6),
+      (10e3,16e6),
+      (15e3,20e6),
+      (15e3,500e3) 
+   ] 
+)
+def test_calculate_efficiency_returns_positive(P_condenser,P_boiler):
+
+
     src = SimpleRankineCycle(P_condenser,P_boiler)
     src.run()
 
@@ -13,10 +23,17 @@ def test_calculate_efficiency_returns_positive():
 
     assert eta >= 0
 
-def test_calculate_efficiency_returns_below_Carnot():
+@pytest.mark.parametrize(
+    "P_condenser,P_boiler",
+   [
+      (5e3,1e6),
+      (10e3,16e6),
+      (15e3,20e6),
+      (15e3,500e3) 
+   ] 
+)
+def test_calculate_efficiency_returns_below_Carnot(P_condenser,P_boiler):
     
-    P_condenser = 10e3
-    P_boiler = 100e3
     src = SimpleRankineCycle(P_condenser,P_boiler)
     src.run()
 
@@ -32,10 +49,18 @@ def test_calculate_efficiency_returns_below_Carnot():
 
     assert eta < eta_carnot
 
-def test_calculate_specific_work_returns_positive():
 
-    P_condenser = 10e3
-    P_boiler = 100e3
+@pytest.mark.parametrize(
+    "P_condenser,P_boiler",
+   [
+      (5e3,1e6),
+      (10e3,16e6),
+      (15e3,20e6),
+      (15e3,500e3) 
+   ] 
+)
+def test_calculate_specific_work_returns_positive(P_condenser,P_boiler):
+
     src = SimpleRankineCycle(P_condenser,P_boiler)
     src.run()
 
@@ -66,3 +91,24 @@ def test_ordering_pressures():
 
     exception_msg = excinfo.value.args[0]
     assert exception_msg == "Condenser pressure should be lower than boiler pressure."
+
+@pytest.mark.parametrize(
+    "P_condenser,P_boiler",
+   [
+      (5e3,1e6),
+      (10e3,16e6),
+      (15e3,20e6),
+      (15e3,500e3) 
+   ] 
+)
+def test_Simple_Rankine_cycle_obeys_First_Law(P_condenser,P_boiler):
+    src = SimpleRankineCycle(P_condenser,P_boiler)
+    src.run()
+
+    wturbine = src.metrics["Turbine work"]
+    wpump = src.metrics["Pump work"]
+    qboiler = src.metrics["Boiler heat"]
+    qcondenser = src.metrics["Condenser heat"]
+
+    residual = (qboiler + wpump) - (wturbine + qcondenser)
+    assert residual >= 0
