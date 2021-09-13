@@ -20,13 +20,13 @@ setup(
     author_email='fabio@fabiofortkamp.com',
     python_requires='>=3.6, <4',
     install_requires=[
-        'CoolProp>=6.3'
+        'CoolProp==6.4.1',
         'matplotlib==3.3.4',
         'numpy==1.19.5',
         'pandas==1.1.5'
     ],
         extras_require={  # Optional
-        'dev': ['ipython'],
-        'test': ['pytest'],
+        'dev': ['ipython==7.13.0'],
+        'test': ['pytest==6.2.5'],
     },
 )
