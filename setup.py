@@ -11,7 +11,13 @@ setup(
     name='pyhe',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
-    version='0.3.1',
+    package_data={
+    'pyhe': [
+        'gasideal.csv',
+        'hformation.csv'
+        ],
+    },
+    version='0.4',
     description='Python model to simulate heat engines',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -23,7 +29,8 @@ setup(
         'CoolProp==6.4.1',
         'matplotlib==3.3.4',
         'numpy==1.19.5',
-        'pandas==1.1.5'
+        'pandas==1.1.5',
+        'scipy==1.4.1'
     ],
         extras_require={  # Optional
         'dev': ['ipython==7.13.0'],

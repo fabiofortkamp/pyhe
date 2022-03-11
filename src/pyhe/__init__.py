@@ -1,6 +1,17 @@
 from collections import namedtuple
+from operator import index
+import math
+
 from CoolProp.CoolProp import PropsSI
 import numpy as np
+from numpy.core.function_base import add_newdoc
+from scipy.interpolate import interp1d
+from scipy.optimize import fsolve
+from pandas import DataFrame,read_csv
+
+import pathlib
+
+here = pathlib.Path(__file__).parent.resolve()
 
 class CarnotSteadyStateCycle(object):
 
@@ -320,5 +331,87 @@ class RankineWithSuperheatCycle(object):
             "Turbine work": w_turbine,
         }
 
+HF_TABLE_FILE = here / "hformation.csv"
+HF_INDEX_LABEL = "Substance"
+HF_FORMULA_LABEL = "Formula"
+HF_MOLAR_MASSS_LABEL = "M(kg/kmol)"
+HF_FORMATION_ENTHALPY_LABEL = "Enthalpy of formation(kJ/kmol)"
+HF_GIBBS_FUNCTION_LABEL = "Gibbs function of formation (kJ/kmol)"
+HF_ABSOLUTE_ENTROPY_LABEL = "Absolute entropy (kJ/kmolK)"
+HF_HHV_LABEL = "HHV(kJ/kg)"
+HF_LHV_LABEL = "LHV(kJ/kg)"
+HF_DF = read_csv(
+    HF_TABLE_FILE,
+    index_col=0,
+    )
 
+STANDARD_TEMPERATURE = 298
+STANDARD_PRESSURE_ATM = 1
 
+GI_TABLE_FILE = here / "gasideal.csv"
+GI_PREAMBLE_NUMBER_OF_LINES = 6
+GI_HEADER_LINE = 7
+
+GI_TEMPERATURE_COLUMN = 0
+GI_NUMBER_OF_PROPERTIES = 3
+GI_PROPERTIES = [
+    "H",
+    "U",
+    "S"
+]
+GI_FLUIDS = [
+    "Carbon dioxide",
+    "Carbon monoxide",
+    "Steam",
+    "Oxygen gas",
+    "Nitrogen gas"]
+
+UNIVERSAL_GAS_CONSTANT = 8.31447
+NITROGEN_AIR_MOLAR_FRACTION = 0.79
+OXYGEN_AIR_MOLAR_FRACTION = 0.21
+
+def _get_column_number_for_ideal_gas_table(fluid,property):
+    "Return the index of the column to be read to yield the property of fluid."
+
+    ifluid = GI_FLUIDS.index(fluid)
+    ip = GI_PROPERTIES.index(property)
+
+    N = len(GI_PROPERTIES)
+
+    return 1 + N*ifluid + ip
+
+def _calculate_ideal_gas_property(fluid,property,T):
+    "Return an interpolated value of property(fluid,T)"
+
+    # this is highly inefficient
+    
+    M = np.loadtxt(GI_TABLE_FILE,delimiter=",",skiprows=GI_HEADER_LINE)
+    
+    x = M[:,GI_TEMPERATURE_COLUMN]
+    y = M[:,_get_column_number_for_ideal_gas_table(fluid,property)]
+
+    return np.interp(T,x,y)
+
+def ideal_gas_enthalpy(fluid,T):
+    "Return the ideal gas enthalpy in kJ/kmol"
+    return 1e3*_calculate_ideal_gas_property(fluid,'H',T)
+
+def ideal_gas_absolute_entropy(fluid,T):
+    "Return the ideal gas absolute entropy in kJ/(kmol K)"
+    return _calculate_ideal_gas_property(fluid,'S',T)
+  
+
+def enthalpy_of_formation(fluid):
+    "Return the molar enthalpy of formation in kJ/kmol"
+
+    return HF_DF.loc[fluid][HF_FORMATION_ENTHALPY_LABEL]
+
+def standard_absolute_entropy(fluid):
+    "Return the standard absolute  molar entropy kJ/(kmol K)"
+
+    return HF_DF.loc[fluid][HF_ABSOLUTE_ENTROPY_LABEL]
+
+def molar_mass(fluid):
+    "Return the molar mass in kg/kmol"
+
+    return HF_DF.loc[fluid][HF_MOLAR_MASSS_LABEL]

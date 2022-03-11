@@ -14,6 +14,11 @@ cm = pyhe.CarnotSteadyStateCycle(T_L,T_H,Delta_s)
 cm.run()
 eta_t = cm.metrics["Thermal efficiency"]
 w = cm.metrics["Specific work"]
+
+fluid = 'Carbon dioxide'
+hfo = pyhe.enthalpy_of_formation(fluid)
+T = 434
+s = pyhe.absolute_ideal_gas_entropy(fluid,T)
 ```
 
 ## Installation
@@ -36,6 +41,6 @@ See `requirements.txt` and `requirements-dev.txt` for the environment requiremen
 
 Tests are available with `pytest`.
 
-The tests currently check for some basic conditions, like exception when certain parameters are not valid, and also for validity of the First and Second Law of Thermodynamics.
+The tests currently check for some basic conditions, like exception when certain parameters are not valid, and also for validity of the First and Second Law of Thermodynamics. For the combustion functions, the tests assert that valid values are returned (such as negative enthalpy of formation for exotermic reactions) and that all functions can be accessed.
 
 Notice that currently tests are highly inneficient because fixtures are not implemented yet.
